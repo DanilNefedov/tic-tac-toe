@@ -44,6 +44,8 @@ function buildScripts(){
         // 'node_modules/imask/dist/imask.js',
         'app/scripts/**/*.js',
         'app/scripts/**/*.ts',
+        '!app/scripts/modules/**/*.js',
+        '!app/scripts/modules/**/*.ts',
         '!app/scripts/**/*.min.js',
     ])
     .pipe(ts({
@@ -54,6 +56,21 @@ function buildScripts(){
     .pipe(uglify())
     
     .pipe(dest('app/scripts'))
+    .pipe(browserSync.stream())
+}
+
+function buildScriptsModules(){
+    return src([
+        'app/scripts/modules/**/*.ts',
+        '!app/scripts/modules/**/*.min.js'
+    ])
+    .pipe(ts({
+        noImplicitAny: true,
+        outFile: 'main-modules.min.js'
+    }))
+    .pipe(concat('main-modules.min.js'))
+    .pipe(uglify())
+    .pipe(dest('app/scripts/modules'))
     .pipe(browserSync.stream())
 }
 
@@ -155,6 +172,7 @@ function build(){
     return src([
         'app/styles/style.min.css',
         'app/scripts/main.min.js',
+        'app/scripts/modules/main-modules.min.js',
         'app/img-dist/**/*.*',
         '!app/img-dist/**/*.svg',
         'app/img-dist/**/sprite.svg',
@@ -168,9 +186,7 @@ function build(){
 }
 
 
-
-
-exports.default = parallel(buildStyles, buildScripts, buildImages, pagesHTML, favicton, watching);
+exports.default = parallel(buildStyles, buildScripts, buildScriptsModules, buildImages, pagesHTML, favicton, watching);
 
 exports.build = series(cleanDist, build);
 exports.spriteSvg = spriteSvg
